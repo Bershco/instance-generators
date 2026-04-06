@@ -1,5 +1,10 @@
 __pycache__/
 *.pyc
+*.pyo
+*.pyd
 .env
 .vscode
 .idea
+.pytest_cache/
+.mypy_cache/
+problem_generator/*/instances/
