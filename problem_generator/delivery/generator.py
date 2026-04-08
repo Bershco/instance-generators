@@ -15,18 +15,22 @@ TEMPLATE_FILE_PATH = Path(__file__).parent / "template.pddl"
 
 
 def generate_room_names(num_locations: int) -> list[str]:
+    """Return deterministic room identifiers matching the observed corpus style."""
     return [f"room{chr(ord('a') + idx)}" for idx in range(num_locations)]
 
 
 def generate_item_names(num_packages: int) -> list[str]:
+    """Return item identifiers in descending order to mirror the source instances."""
     return [f"item{idx}" for idx in range(num_packages, 0, -1)]
 
 
 def generate_bot_names(num_bots: int) -> list[str]:
+    """Return bot identifiers."""
     return [f"bot{idx}" for idx in range(1, num_bots + 1)]
 
 
 def generate_arm_names(num_bots: int, arms_per_bot: int) -> list[str]:
+    """Return arm names grouped by bot using the delivery naming convention."""
     if arms_per_bot == 2:
         arm_labels = ["left", "right"]
     elif arms_per_bot == 3:
@@ -41,6 +45,7 @@ def generate_arm_names(num_bots: int, arms_per_bot: int) -> list[str]:
 
 
 def build_door_graph(num_locations: int) -> list[tuple[str, str]]:
+    """Build a small connected room graph shaped like the original delivery cases."""
     rooms = generate_room_names(num_locations)
 
     if num_locations == 2:
@@ -102,6 +107,7 @@ def build_door_graph(num_locations: int) -> list[tuple[str, str]]:
 def compute_shortest_distances(
         rooms: list[str], doors: list[tuple[str, str]], start_room: str
 ) -> dict[str, int]:
+    """Compute directed shortest-path distances from one room."""
     adjacency = {room: [] for room in rooms}
     for source, target in doors:
         adjacency[source].append(target)
@@ -120,6 +126,7 @@ def compute_shortest_distances(
 
 
 def choose_num_bots(num_locations: int, num_packages: int) -> int:
+    """Scale the fleet size conservatively with map size and package count."""
     if num_locations <= 2:
         return 1
     if num_locations <= 4:
@@ -130,12 +137,14 @@ def choose_num_bots(num_locations: int, num_packages: int) -> int:
 
 
 def choose_arms_per_bot(num_locations: int, num_packages: int) -> int:
+    """Use two arms by default and a third only for the largest layouts."""
     if num_locations == 6 and num_packages >= 34:
         return 3
     return 2
 
 
 def choose_initial_rooms(rooms: list[str], num_packages: int) -> list[str]:
+    """Restrict package start rooms so small instances stay clustered and readable."""
     if len(rooms) <= 2 or num_packages <= 12:
         return [rooms[0]]
     if len(rooms) <= 5 or num_packages <= 32:
@@ -149,6 +158,7 @@ def assign_item_rooms(
         doors: list[tuple[str, str]],
         max_distance: int,
 ) -> tuple[dict[str, str], dict[str, str]]:
+    """Assign each item a reachable start room and a reasonably distant goal room."""
     initial_room_pool = choose_initial_rooms(rooms, len(items))
     initial_positions = {}
     goal_positions = {}
@@ -181,6 +191,7 @@ def assign_item_rooms(
 
 
 def generate_weights(num_packages: int, max_capacity: int) -> list[int]:
+    """Generate light package weights that still force tray and load decisions."""
     max_weight = 1
     if num_packages >= 12:
         max_weight = 2
@@ -194,6 +205,7 @@ def generate_weights(num_packages: int, max_capacity: int) -> list[int]:
 
 
 def choose_load_limit(weights: list[int], max_capacity: int) -> int:
+    """Choose a per-bot capacity that keeps every instance feasible."""
     min_capacity = max(4, max(weights))
     capacity = max(min_capacity, int(0.75 * max_capacity))
     return min(capacity, max_capacity)
@@ -206,6 +218,7 @@ def generate_instance(
         max_capacity: int,
         max_distance: int,
 ) -> str:
+    """Render a single delivery problem instance from the template."""
     template = get_problem_template(TEMPLATE_FILE_PATH)
 
     rooms = generate_room_names(num_locations)
@@ -280,6 +293,7 @@ def generate_multiple_problems(
         num_prev_instances: int = 0,
         **difficulty_kwargs,
 ) -> None:
+    """Generate a batch of delivery instances using the shared workflow API."""
     min_locations = int(difficulty_kwargs.get("min_locations", 3))
     max_locations = int(difficulty_kwargs.get("max_locations", 6))
     min_packages = int(difficulty_kwargs.get("min_packages", 4))

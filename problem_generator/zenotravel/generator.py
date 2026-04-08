@@ -13,6 +13,7 @@ TEMPLATE_FILE_PATH = Path(__file__).parent / "template.pddl"
 
 
 def generate_distance_matrix(num_cities: int, max_distance: int) -> list[list[int]]:
+    """Create a symmetric distance matrix similar to the original instances."""
     matrix = [[0 for _ in range(num_cities)] for _ in range(num_cities)]
     for src in range(num_cities):
         for dst in range(src + 1, num_cities):
@@ -29,6 +30,7 @@ def generate_instance(
         num_aircraft: int,
         max_fuel: int,
 ) -> str:
+    """Render one zenotravel instance with aircraft, passengers, and fuel data."""
     template = get_problem_template(TEMPLATE_FILE_PATH)
 
     cities = [f"city{i}" for i in range(num_cities)]
@@ -96,6 +98,7 @@ def generate_multiple_problems(
         max_fuel=5000,
         **_,
 ):
+    """Generate a batch of zenotravel instances."""
     output_folder = Path(output_folder)
     output_folder.mkdir(parents=True, exist_ok=True)
     start_index = num_prev_instances or 0

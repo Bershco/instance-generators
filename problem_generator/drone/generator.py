@@ -13,6 +13,7 @@ TEMPLATE_FILE_PATH = Path(__file__).parent / "template.pddl"
 
 
 def generate_instance(instance_name: str, x_size: int, y_size: int, z_size: int) -> str:
+    """Render a drone grid instance that requires visiting every coordinate."""
     template = get_problem_template(TEMPLATE_FILE_PATH)
 
     locations = []
@@ -56,6 +57,7 @@ def generate_multiple_problems(
         max_z=4,
         **_,
 ):
+    """Generate a batch of drone instances with bounded 3D grid sizes."""
     output_folder = Path(output_folder)
     output_folder.mkdir(parents=True, exist_ok=True)
     start_index = num_prev_instances or 0

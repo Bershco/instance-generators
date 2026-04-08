@@ -13,6 +13,7 @@ TEMPLATE_FILE_PATH = Path(__file__).parent / "template.pddl"
 
 
 def generate_partition(num_blocks: int, num_groups: int) -> list[list[int]]:
+    """Split blocks into non-empty groups that define the target co-location classes."""
     groups = [[] for _ in range(num_groups)]
     block_indices = list(range(num_blocks))
     random.shuffle(block_indices)
@@ -27,6 +28,7 @@ def generate_instance(
         num_groups: int,
         max_coord: int,
 ) -> str:
+    """Render one block-grouping instance with unique initial coordinates."""
     template = get_problem_template(TEMPLATE_FILE_PATH)
 
     blocks = [f"b{i + 1}" for i in range(num_blocks)]
@@ -80,6 +82,7 @@ def generate_multiple_problems(
         max_values=40,
         **_,
 ):
+    """Generate a batch of block-grouping instances."""
     output_folder = Path(output_folder)
     output_folder.mkdir(parents=True, exist_ok=True)
     start_index = num_prev_instances or 0

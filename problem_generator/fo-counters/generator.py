@@ -13,6 +13,7 @@ TEMPLATE_FILE_PATH = Path(__file__).parent / "template.pddl"
 
 
 def generate_instance(instance_name: str, num_counters: int, max_value: int) -> str:
+    """Render a functional-counters instance with monotone ordering goals."""
     template = get_problem_template(TEMPLATE_FILE_PATH)
     counters = [f"c{i}" for i in range(num_counters)]
     counter_values = [f"(= (value {counter}) 0)" for counter in counters]
@@ -41,6 +42,7 @@ def generate_multiple_problems(
         max_value=40,
         **_,
 ):
+    """Generate a batch of fo-counters instances using the shared workflow API."""
     output_folder = Path(output_folder)
     output_folder.mkdir(parents=True, exist_ok=True)
     start_index = num_prev_instances or 0

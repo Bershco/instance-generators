@@ -13,6 +13,7 @@ TEMPLATE_FILE_PATH = Path(__file__).parent / "template.pddl"
 
 
 def generate_supply(num_goods: int, num_markets: int, max_amount: int) -> list[list[int]]:
+    """Distribute stock across a bounded number of markets for each good."""
     supply = [[0 for _ in range(num_markets)] for _ in range(num_goods)]
     for good_idx in range(num_goods):
         active_markets = random.sample(
@@ -31,6 +32,7 @@ def generate_instance(
         max_cost: int,
         max_capacity: int,
 ) -> str:
+    """Render a travelling purchase problem instance with feasible demand levels."""
     template = get_problem_template(TEMPLATE_FILE_PATH)
 
     markets = [f"market{i + 1}" for i in range(num_markets)]
@@ -51,13 +53,13 @@ def generate_instance(
 
     initial_statements.append("(loc truck0 depot0)")
     locations = ["depot0"] + markets
-    for src in locations:
-        for dst in locations:
-            if src == dst:
-                cost = "0"
-            else:
-                cost = f"{random.uniform(50.0, float(max_capacity * 60 + 150)):.2f}"
+    for idx, src in enumerate(locations):
+        initial_statements.append(f"(= (drive-cost {src} {src}) 0)")
+        for jdx in range(idx + 1, len(locations)):
+            dst = locations[jdx]
+            cost = f"{random.uniform(50.0, float(max_capacity * 60 + 150)):.2f}"
             initial_statements.append(f"(= (drive-cost {src} {dst}) {cost})")
+            initial_statements.append(f"(= (drive-cost {dst} {src}) {cost})")
     initial_statements.append("(= (total-cost) 0)")
 
     goal_conditions = [f"(>= (bought {good}) (request {good}))" for good in goods]
@@ -85,6 +87,7 @@ def generate_multiple_problems(
         max_capacity=20,
         **_,
 ):
+    """Generate a batch of TPP instances."""
     output_folder = Path(output_folder)
     output_folder.mkdir(parents=True, exist_ok=True)
     start_index = num_prev_instances or 0

@@ -13,6 +13,7 @@ TEMPLATE_FILE_PATH = Path(__file__).parent / "template.pddl"
 
 
 def build_connected_edges(num_waypoints: int) -> set[tuple[int, int]]:
+    """Create a connected visibility graph with a few extra shortcuts."""
     edges = set()
     order = list(range(num_waypoints))
     random.shuffle(order)
@@ -33,6 +34,7 @@ def build_connected_edges(num_waypoints: int) -> set[tuple[int, int]]:
 
 
 def choose_goal_mode(supported_modes: list[str]) -> str:
+    """Prefer the more informative imaging modes when they are available."""
     preferred_order = ["high_res", "colour", "low_res"]
     for mode in preferred_order:
         if mode in supported_modes:
@@ -47,6 +49,7 @@ def generate_instance(
         num_objectives: int,
         max_energy: int,
 ) -> str:
+    """Render a rover instance with reachable samples, images, and communication goals."""
     template = get_problem_template(TEMPLATE_FILE_PATH)
 
     rovers = [f"rover{i}" for i in range(num_rovers)]
@@ -56,13 +59,14 @@ def generate_instance(
     objectives = [f"objective{i}" for i in range(num_objectives)]
     modes = ["colour", "high_res", "low_res"]
 
+    connectivity = sorted(build_connected_edges(num_waypoints))
     visible_edges = [
         f"(visible {waypoints[src]} {waypoints[dst]})"
-        for src, dst in sorted(build_connected_edges(num_waypoints))
+        for src, dst in connectivity
     ]
     traverse_edges = []
     for rover in rovers:
-        for src, dst in sorted(build_connected_edges(num_waypoints)):
+        for src, dst in connectivity:
             if random.random() < 0.75:
                 traverse_edges.append(f"(can_traverse {rover} {waypoints[src]} {waypoints[dst]})")
 
@@ -164,6 +168,7 @@ def generate_multiple_problems(
         max_energy=80,
         **_,
 ):
+    """Generate a batch of rover instances."""
     output_folder = Path(output_folder)
     output_folder.mkdir(parents=True, exist_ok=True)
 

@@ -26,6 +26,7 @@ PAIN_POOL = [
 
 
 def unique_names(pool: list[str], count: int, offset: int = 0) -> list[str]:
+    """Return `count` names from a pool, wrapping with numeric suffixes if needed."""
     names = []
     for idx in range(count):
         base = pool[(idx + offset) % len(pool)]
@@ -41,6 +42,7 @@ def generate_instance(
         num_pains: int,
         max_locale: int,
 ) -> str:
+    """Render a single mystery-prime instance with consistent typed objects."""
     template = get_problem_template(TEMPLATE_FILE_PATH)
 
     foods = unique_names(FOOD_POOL, num_foods, random.randint(0, len(FOOD_POOL) - 1))
@@ -95,6 +97,7 @@ def generate_multiple_problems(
         max_fuel=9,
         **_,
 ):
+    """Generate a batch of mystery-prime instances."""
     output_folder = Path(output_folder)
     output_folder.mkdir(parents=True, exist_ok=True)
     start_index = num_prev_instances or 0
